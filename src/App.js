@@ -294,6 +294,40 @@ class App extends Component {
         <div className='ajustar'>
           A la izquierda se encuentra la matriz de confusión estándar y a la derecha la matriz de confusión normalizada por columnas para que se evidencie de forma más tangible las confusiones por categoría. De ahí se puede ver fácilmente que la clase con las que más se confunden las clases positivas y negativas es la clase neutra. Esto tiene sentido pues la clase neutra es la que se encuentra más cerca a cada una de ellas. Por otro lado, vemos que los tweets neutros se confunden casi siempre con tweets negativos. Las métricas asociadas son:
         </div>
+        <br/>
+
+        <table class="tg">
+        <tbody>
+          <tr>
+            <th class="tg-88nc">i</th>
+            <th class="tg-88nc">j</th>
+            <th class="tg-7btt">Precision P</th>
+            <th class="tg-7btt">Precision N </th>
+            <th class="tg-7btt">Precision Neu</th>
+            <th class="tg-7btt">Recall P</th>
+            <th class="tg-7btt">Recall N</th>
+            <th class="tg-7btt">Recall Neu</th>
+            <th class="tg-7btt">F1 P</th>
+            <th class="tg-7btt">F1 N</th>
+            <th class="tg-7btt">F1 Neu</th>
+            <th class="tg-7btt">Accuracy</th>
+          </tr>
+          <tr>
+            <td class="tg-uys7">0.11</td>
+            <td class="tg-uys7">0.28</td>
+            <td class="tg-c3ow">0.7960</td>
+            <td class="tg-c3ow">0.7298</td>
+            <td class="tg-c3ow">0.1654</td>
+            <td class="tg-c3ow">0.7822</td>
+            <td class="tg-c3ow">0.6673</td>
+            <td class="tg-c3ow">0.2239</td>
+            <td class="tg-c3ow">0.7891</td>
+            <td class="tg-c3ow">0.6972</td>
+            <td class="tg-c3ow">0.1902</td>
+            <td class="tg-c3ow">0.6733</td>
+          </tr>
+          </tbody>
+        </table>
 
         <h2>Análisis del histórico de seguidores en las cuentas, cuentas robot</h2>
         <h3>Análisis del histórico de seguidores en las cuentas</h3>
