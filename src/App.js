@@ -51,10 +51,11 @@ import videoGamesDoc from './images/VideoGamesDoc.JPG'
 import videoGamesCla from './images/VideoGamesClasificacion.JPG'
 import videosDoc from './images/Videos_doc.JPG'
 import videosCla from './images/VideosClasificacion.JPG'
-
-
-
-
+import prCurve from './images/prCurve.png'
+import cmPolarity from './images/notNormalizedBasicClassification.png'
+import cmPolarityNorm from './images/normalizedBasicClassification.png'
+import electronicsCM from './images/electronics_cm.png'
+ 
 class App extends Component {
 
   constructor(props) {
@@ -158,7 +159,7 @@ class App extends Component {
         Retrieved <b>{this.state.data['original'].length}</b>  tweets for user <b>{this.usernameInput.current.value}</b>.
         <br/>
         <Chart title="Followers in time" ylabel="Followers" data={this.state.data['original']} /* onRef={ref => this.chart = ref} */ />
-        <Chart title="Derivative of followers" ylabel="Followers/hour" data={this.state.data['derivative']} /* onRef={ref => this.chart = ref} */ />
+        <Chart title="Derivative - dfollowers/dt" ylabel="Followers/hour" data={this.state.data['derivative']} /* onRef={ref => this.chart = ref} */ />
       </div>;
     }
     else {
@@ -180,6 +181,11 @@ class App extends Component {
       <div className="App">
        
         <h1>Taller 2</h1>
+        Mauricio Neira
+        <br/>
+        Maria Camila Hernández
+        <br/>
+        William Sanchez
         <h2>Análisis de polaridad de tweets</h2>
         <h3>Anotación de datos</h3>
         Para visualizar la polaridad de los tweets de un usuario, ingrese el nombre del usuario que desea buscar. 
@@ -195,13 +201,106 @@ class App extends Component {
         {polarityChart}
 
         <h3>Modelo de análisis de sentimientos</h3>
+
+        <div className='ajustar'>
+          El modelo utilizado se basó en <a href="https://github.com/aylliote/senti-py">este repositorio</a>. 
+          El modelo de análisis de sentimientos consiste de 4 etapas.
+  
+          <ol>
+            <li>Se preprocesa el texto </li>
+            <br/>
+            <li>Pasar el tweets a una versión vectorizada utilizando <a href="https://galaxydatatech.com/2018/11/19/feature-extraction-with-tf-idf/">TF-IDF</a> (Term Frequency – Inverse Document Frequency ) usando la <a href="https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html">implementación de scikit-learn</a>.</li>
+            <br/>
+            <li>El paso anterior va a producir una matrix de Nxn. Donde N es la cantidad de tweets en la base de datos y n la cantidad de features. Dado que esa matriz es extremadamente esparsa, este paso reduce n para reducir la dimensionalidad del espacio de caracteristicas y acelara el proceso de clasificación.</li>
+            <br/>
+            <li>Se implementa <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html">Multinomial Naive Bayes</a> sobre ese espacio de caracteríscitas. Se usa GridSearch K con  K = 10 como cross validación para encontrar el clasificador óptimo en el espacio de hiperparámetros.</li>
+          </ol>
+
+          El resultado es un clasificador que toma un tweet y predice un valor entre 0 y 1 donde 0 es un tweet extremadamente negativo, 1 un tweet extremadamente positivo y los valores intermedios valores intermedios de polaridad. 
+        </div>
+
         <h3>Evaluación de la calidad del modelo</h3>
 
-        <h2>Análisis del histórico de seguidores en las cuentas, cuentas robot</h2>
+        <div className='ajustar'>
+          La evaluación del modelo se hizo sobre los datos encontrados en <a href="https://github.com/NatashaSvic/NLP_Spanish_Sentiment_Anaylsis_Text_Generation">este repositorio</a>. Este trabajo se basó en recolectar y anotar una gran cantidad de tweets alrededor de las elecciones presidenciales del 2018. Se usó <a href="https://raw.githubusercontent.com/NatashaSvic/NLP_Spanish_Sentiment_Anaylsis_Text_Generation/master/TASS_data/general_corpus_2012/general-train-tagged-3l.xml">este archivo</a> del repositorio para evaluar el comportamiento del clasificador. Consta de las siguientes anotaciones:
+        </div>
         
+        
+        <br/>
+        <div className="ajustarYCentrar">
+          <table className="tg">
+          <tbody>
+            <tr>
+              <th className="tg-88nc">Label</th>
+              <th className="tg-88nc">Cantidad</th>
+            </tr>
+            <tr>
+              <td className="tg-uys7">P</td>
+              <td className="tg-uys7">2884</td>
+            </tr>
+            <tr>
+              <td className="tg-uys7">N</td>
+              <td className="tg-uys7">2182</td>
+            </tr>
+            <tr>
+              <td className="tg-uys7">NEU</td>
+              <td className="tg-uys7">670</td>
+            </tr>
+            <tr>
+              <td className="tg-88nc">Total</td>
+              <td className="tg-uys7">5736</td>
+            </tr>
+            </tbody>
+          </table>
+          
+        </div>
+        <br/> 
+        <div className='ajustar'>
+          Para poder evaluar el modelo, fue necesario discretizar el espacio de salida del clasificador (el intervalo [0,1]) en 3 valores: positivo ('P'), negativo ('N') y neutral ('NEU'). Para hacer eso, se establecieron 2 umbrales i,j donde  \(i \le j \). De esta forma, todo tweet con score de polaridad \(p\), se clasifica de la siguiente forma: si \(p\le i\) se clasifica como 'N', si \(p\le j \wedge p\ge i\) se clasifica como 'NEU' y si \(p\ge j\) se clasifica como 'P'. 
+          <br/>
+          <br/>
+
+          De esta forma, para cada cada par de valores \(i,j\) se tiene una matriz de confusión que describe el desempeño del algoritmo. A partir de esta matriz de confusión se puede extraer la precisión y la cobertura para cada una de las anotaciones y se puede construir una curva de precisión y cobertura. Ésta se muestra a continuación: 
+
+        </div>
+
+        <img src={prCurve} alt="Curva de precision y cobertura" width="900" />
+        
+        <div className='ajustar'>
+          A partir de la curva, es claro que para todo régimen operativo, el algoritmo clasifica mejor los tweets positivos seguido de tweets negativos y finalmente, tweets neutros. Es posible que este comportamiento esté dado por la facilidad de correlacionar un vocabulario positivo con un tweet positivo mientras que un tweet negativo no es facilmente clasificable como negativo pues hay factores adicionales a considerar como la sátira, la ironía y el sarcasmo. 
+          <br/>
+          <br/>
+          Los tweets neutros son los más difíciles de clasificar pues se encuentran en la mitad de los 2 extremos de polaridad como se evidencia por la cercanía de los puntos verdes al origen. 
+          <br/>
+          <br/>
+          Vemos que el mejor accuracy obtenido a lo largo de toda la curva es de 0.72 (representado por los puntos rojos en la gráfica), considerablemente más alto que si el algoritmo adivinara (donde tendría un accurace de 0.33). 
+          <br/>
+          <br/>
+          Ahora bien, nuestro critero para escoger el mejor par \(i,j\) fue el F1 score. El F1 se define como 
+        </div>
+
+        <br/>
+        \(F1=2\cdot \frac{'{'}precision\cdot recall{'}'}{'{'} precision+recall{'}'}\)
+        <br/>
+        <br/>
+
+        <div className='ajustar'>
+          Esto es el promedio harmónico entre la precision y la cobertura. Maximizar el promedio este valor a través de las anotaciones implica maximizar la precisión  y la cobertura de forma conjunta, priorizando valores similares de precisión y cobertura. Los puntos correspondientes a la F1 máxima son negros en la gráfica. A continuación se muestran la matrices de confusión estándar y normalizadas asociadas a estos puntos:
+        </div>
+        <img src={cmPolarity} alt="Curva de precision y cobertura"                 height="350" />
+        <img src={cmPolarityNorm} alt="Curva de precision y cobertura normalizada" height="350" />
+
+
+        <div className='ajustar'>
+          A la izquierda se encuentra la matriz de confusión estándar y a la derecha la matriz de confusión normalizada por columnas para que se evidencie de forma más tangible las confusiones por categoría. De ahí se puede ver fácilmente que la clase con las que más se confunden las clases positivas y negativas es la clase neutra. Esto tiene sentido pues la clase neutra es la que se encuentra más cerca a cada una de ellas. Por otro lado, vemos que los tweets neutros se confunden casi siempre con tweets negativos. Las métricas asociadas son:
+        </div>
+
+        <h2>Análisis del histórico de seguidores en las cuentas, cuentas robot</h2>
+        <h3>Análisis del histórico de seguidores en las cuentas</h3>
+        <div className='ajustar'>
         Para visualizar los seguidores históricos, ingrese el nombre del usuario que desea buscar. 
         Por ejemplo: AlvaroUribeVel, IvanDuque y Bogota.
-
+        </div>
         <br/>
         <br/>
         <input type='text' ref={this.usernameInput}></input>
@@ -334,6 +433,8 @@ class App extends Component {
         <img src={videosDoc} alt="Videos Documentos" height="250" />
         <img src={videosCla} alt="Videos Clasificacion" height="250" />
 
+        <h3>Matriz de confusión para electrónicos</h3>
+        <img src={electronicsCM} alt="Matriz de confusion para electronicos" height="400" />
       </div>
     );
   }
